@@ -284,6 +284,7 @@
     .admin-btn:hover { background: #c0392b; }
     .unit-row-admin { display: flex; justify-content: space-between; align-items: center; background: #252e3d; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
     .del-btn { background: #e74c3c; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .backup-row { display: flex; gap: 10px; margin-bottom: 15px; }
 </style>
 </head>
 <body>
@@ -371,6 +372,13 @@
             <h3>GARDEN TD ADMIN PANEL</h3>
             <div style="text-align:right; margin-bottom:10px;"><button class="del-btn" id="close-admin-btn">Close X</button></div>
 
+            <div class="backup-row">
+                <button class="admin-btn" style="background:#27ae60; margin:0;" id="export-btn">📥 Export Database File</button>
+                <label class="admin-btn" style="background:#2980b9; margin:0; text-align:center; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    📤 Import Database <input type="file" id="import-file" accept=".json" style="display:none;">
+                </label>
+            </div>
+
             <div class="form-group"><label>UNIT NAME</label><input type="text" id="adm-name" placeholder="e.g. Infectia"></div>
             <div class="form-group">
                 <label>CATEGORY</label>
@@ -396,7 +404,7 @@
 <script>
     // SUPABASE CONFIGURATION
     const SUPABASE_URL = 'https://howmrkzcbbkeachooswu.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_3md-z30bSGulSMjT8gOWIQ_-0iRS...'; // Your publishable key from the dashboard
+    const SUPABASE_ANON_KEY = 'sb_publishable_3md-z30bSGulSMjT8gOWIQ_-0iRS...';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let gameUnits = [];
@@ -475,6 +483,8 @@
 
         document.getElementById('confirm-add-btn').addEventListener('click', confirmAddToTrade);
         document.getElementById('save-unit-btn').addEventListener('click', saveAdminUnit);
+        document.getElementById('export-btn').addEventListener('click', exportDatabase);
+        document.getElementById('import-file').addEventListener('change', importDatabase);
     });
 
     async function fetchUnitsFromCloud() {
@@ -702,6 +712,49 @@
 
         await fetchUnitsFromCloud();
         renderAdminList();
+    }
+
+    function exportDatabase() {
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gameUnits));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "garden_td_units_backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    async function importDatabase(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                let importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    // Clean fields to fit Supabase table schema (remove local IDs if present)
+                    let cleanUnits = importedData.map(({ id, ...rest }) => rest);
+                    
+                    const { error } = await supabaseClient
+                        .from('garden_td_units')
+                        .insert(cleanUnits);
+
+                    if (error) {
+                        alert('Error importing to cloud: ' + error.message);
+                        return;
+                    }
+
+                    await fetchUnitsFromCloud();
+                    renderAdminList();
+                    alert(`Successfully imported and synced ${cleanUnits.length} units to the cloud!`);
+                } else {
+                    alert('Invalid backup file format!');
+                }
+            } catch (err) {
+                alert('Error reading backup file!');
+            }
+        };
+        reader.readAsText(file);
     }
 </script>
 </body>
