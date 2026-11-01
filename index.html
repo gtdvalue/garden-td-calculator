@@ -732,7 +732,6 @@
             try {
                 let importedData = JSON.parse(e.target.result);
                 if (Array.isArray(importedData)) {
-                    // Clean fields to fit Supabase table schema (remove local IDs if present)
                     let cleanUnits = importedData.map(({ id, ...rest }) => rest);
                     
                     const { error } = await supabaseClient
