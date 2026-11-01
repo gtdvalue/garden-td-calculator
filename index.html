@@ -139,10 +139,9 @@
     /* MODALS */
     .modal, .inspect-modal, .admin-modal, .pin-modal {
         display: none;
-        position: absolute;
+        position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(10, 14, 20, 0.95);
-        border-radius: 12px;
         justify-content: center;
         align-items: center;
         z-index: 50;
@@ -151,7 +150,8 @@
     }
     .modal-container {
         width: 100%;
-        height: 100%;
+        max-width: 700px;
+        height: 450px;
         background-color: #232c37;
         background-image: radial-gradient(#1a2029 25%, transparent 25%), radial-gradient(#1a2029 25%, transparent 25%);
         background-size: 16px 16px;
@@ -199,6 +199,7 @@
         font-size: 11px;
         font-weight: 700;
         cursor: pointer;
+        text-align: left;
     }
     .tab-btn.active { border-color: #a55eea; color: #fff; }
     .unit-grid-wrapper {
@@ -288,14 +289,14 @@
 <body>
 
 <div class="wrapper">
-    <div class="header" onclick="triggerAdminModal()">GARDEN TD VALUE CALCULATOR</div>
+    <div class="header" id="main-header">GARDEN TD VALUE CALCULATOR</div>
     <div class="status-banner" id="wfl-status">TRADE STATUS: FAIR</div>
     
     <div class="calculator-grid">
         <div class="side your-side">
             <div class="side-header">
                 <span>YOUR VALUE</span>
-                <button class="add-btn" onclick="openItemSelector('your')">+</button>
+                <button class="add-btn" id="your-add-btn">+</button>
             </div>
             <div class="drop-zone" id="your-zone"></div>
             <div class="total-box" id="your-total">TOTAL VALUE: 0</div>
@@ -304,7 +305,7 @@
         <div class="side their-side">
             <div class="side-header">
                 <span>THEIR VALUE</span>
-                <button class="add-btn" onclick="openItemSelector('their')">+</button>
+                <button class="add-btn" id="their-add-btn">+</button>
             </div>
             <div class="drop-zone" id="their-zone"></div>
             <div class="total-box" id="their-total">TOTAL VALUE: 0</div>
@@ -315,16 +316,16 @@
     <div class="modal" id="item-modal">
         <div class="modal-container">
             <div class="modal-search-row">
-                <input type="text" class="modal-search" id="search-input" placeholder="SEARCH UNITS..." oninput="applyFilters()">
-                <button class="close-btn" onclick="closeModal()">✕</button>
+                <input type="text" class="modal-search" id="search-input" placeholder="SEARCH UNITS...">
+                <button class="close-btn" id="close-modal-btn">✕</button>
             </div>
             <div class="modal-body">
-                <div class="sidebar-tabs">
-                    <button class="tab-btn active" onclick="filterCategory('Leaderboard', this)">LEADERBOARD</button>
-                    <button class="tab-btn" onclick="filterCategory('Exclusive', this)">EXCLUSIVE</button>
-                    <button class="tab-btn" onclick="filterCategory('Godly', this)">GODLY</button>
-                    <button class="tab-btn" onclick="filterCategory('Legendary', this)">LEGENDARY</button>
-                    <button class="tab-btn" onclick="filterCategory('Item', this)">ITEM</button>
+                <div class="sidebar-tabs" id="sidebar-tabs">
+                    <button class="tab-btn active" data-cat="Leaderboard">LEADERBOARD</button>
+                    <button class="tab-btn" data-cat="Exclusive">EXCLUSIVE</button>
+                    <button class="tab-btn" data-cat="Godly">GODLY</button>
+                    <button class="tab-btn" data-cat="Legendary">LEGENDARY</button>
+                    <button class="tab-btn" data-cat="Item">ITEM</button>
                 </div>
                 <div class="unit-grid-wrapper">
                     <div class="unit-grid" id="unit-grid"></div>
@@ -338,7 +339,7 @@
         <div class="inspect-card">
             <div class="inspect-title">
                 <span id="inspect-name">UNIT</span>
-                <span style="cursor:pointer; color:#8a9ba8;" onclick="closeInspect()">✕</span>
+                <span style="cursor:pointer; color:#8a9ba8;" id="close-inspect-btn">✕</span>
             </div>
             <div class="inspect-stats">
                 <div class="stat-box"><div class="lbl">VALUE</div><div class="val" id="inspect-val">0</div></div>
@@ -346,11 +347,11 @@
                 <div class="stat-box"><div class="lbl">STATUS</div><div class="val" id="inspect-status">STABLE</div></div>
             </div>
             <div class="qty-row">
-                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                <button class="qty-btn" id="qty-minus-btn">-</button>
                 <span id="inspect-qty" style="font-weight:bold; font-size:16px;">1</span>
-                <button class="qty-btn" onclick="changeQty(1)">+</button>
+                <button class="qty-btn" id="qty-plus-btn">+</button>
             </div>
-            <button class="add-trade-btn" onclick="confirmAddToTrade()">ADD TO TRADE</button>
+            <button class="add-trade-btn" id="confirm-add-btn">ADD TO TRADE</button>
         </div>
     </div>
 
@@ -359,8 +360,8 @@
         <div class="inspect-card" style="max-width:320px; text-align:center;">
             <div style="font-weight:bold; color:#e74c3c; margin-bottom:10px;">ENTER ADMIN PIN</div>
             <input type="password" id="admin-pin-input" placeholder="PIN CODE" style="width:100%; padding:8px; background:#1f2732; border:1px solid #3c4b5e; color:#fff; border-radius:4px; text-align:center; margin-bottom:10px;">
-            <button class="admin-btn" onclick="verifyPin()">UNLOCK</button>
-            <button style="background:none; border:none; color:#8a9ba8; margin-top:10px; cursor:pointer;" onclick="document.getElementById('pin-modal').style.display='none'">Cancel</button>
+            <button class="admin-btn" id="unlock-pin-btn">UNLOCK</button>
+            <button style="background:none; border:none; color:#8a9ba8; margin-top:10px; cursor:pointer;" id="cancel-pin-btn">Cancel</button>
         </div>
     </div>
 
@@ -368,12 +369,12 @@
     <div class="admin-modal" id="admin-modal">
         <div class="admin-card">
             <h3>GARDEN TD ADMIN PANEL</h3>
-            <div style="text-align:right; margin-bottom:10px;"><button class="del-btn" onclick="document.getElementById('admin-modal').style.display='none'">Close X</button></div>
+            <div style="text-align:right; margin-bottom:10px;"><button class="del-btn" id="close-admin-btn">Close X</button></div>
             
             <div class="backup-row">
-                <button class="admin-btn" style="background:#27ae60; margin:0;" onclick="exportDatabase()">📥 Export Database File</button>
+                <button class="admin-btn" style="background:#27ae60; margin:0;" id="export-btn">📥 Export Database File</button>
                 <label class="admin-btn" style="background:#2980b9; margin:0; text-align:center; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                    📤 Import Database <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importDatabase(event)">
+                    📤 Import Database <input type="file" id="import-file" accept=".json" style="display:none;">
                 </label>
             </div>
 
@@ -392,7 +393,7 @@
                 <input type="file" id="adm-file" accept="image/*" style="background:none; border:none; padding:4px 0;">
                 <input type="text" id="adm-icon" placeholder="Or paste direct image URL / emoji here" style="margin-top:4px;">
             </div>
-            <button class="admin-btn" onclick="saveAdminUnit()">SAVE / ADD UNIT</button>
+            <button class="admin-btn" id="save-unit-btn">SAVE / ADD UNIT</button>
             
             <div style="margin-top:15px; border-top:1px solid #3c4b5e; padding-top:10px;" id="admin-unit-list"></div>
         </div>
@@ -401,85 +402,118 @@
 
 <script>
     let defaultUnits = [
-        // LEADERBOARD
         { name: "Electric Beetroot", category: "Leaderboard", value: "1.85K+", demand: "7.5/10", status: "SLOWLY RISING", icon: "⚡" },
         { name: "Infectia", category: "Leaderboard", value: "2.80K", demand: "8/10", status: "STABLE", icon: "🌱" },
         { name: "Eastern Dragon", category: "Leaderboard", value: "3.20K+", demand: "9/10", status: "RISING", icon: "🐉" },
         { name: "Celestial Rose", category: "Leaderboard", value: "4.10K", demand: "8.5/10", status: "STABLE", icon: "🌹" },
-
-        // EXCLUSIVE
         { name: "Venus Floortrap", category: "Exclusive", value: "950", demand: "7/10", status: "STABLE", icon: "🪴" },
         { name: "Boombulb", category: "Exclusive", value: "1.20K", demand: "8/10", status: "RISING", icon: "💣" },
         { name: "Sonic Bloom", category: "Exclusive", value: "850", demand: "6.5/10", status: "STABLE", icon: "🌸" },
         { name: "Garden Fairy", category: "Exclusive", value: "1.10K", demand: "7.5/10", status: "SLOWLY RISING", icon: "🧚" },
         { name: "Peas in a Pod", category: "Exclusive", value: "750", demand: "6/10", status: "STABLE", icon: "🫛" },
         { name: "Scarecrow", category: "Exclusive", value: "900", demand: "7/10", status: "STABLE", icon: "🌾" },
-
-        // GODLY
         { name: "Pomegranate", category: "Godly", value: "500", demand: "6/10", status: "STABLE", icon: "🍎" },
         { name: "Radish", category: "Godly", value: "450", demand: "5.5/10", status: "STABLE", icon: "🥕" },
         { name: "Vines", category: "Godly", value: "550", demand: "6.5/10", status: "SLOWLY RISING", icon: "🌿" },
         { name: "Walnut", category: "Godly", value: "400", demand: "5/10", status: "STABLE", icon: "🌰" },
         { name: "Stemstrike", category: "Godly", value: "600", demand: "7/10", status: "STABLE", icon: "🗡️" },
         { name: "Slapleaf", category: "Godly", value: "480", demand: "6/10", status: "STABLE", icon: "🍃" },
-
-        // LEGENDARY
         { name: "Onion", category: "Legendary", value: "150", demand: "4/10", status: "STABLE", icon: "🧅" },
         { name: "Tomato", category: "Legendary", value: "180", demand: "4.5/10", status: "STABLE", icon: "🍅" },
         { name: "Potato", category: "Legendary", value: "130", demand: "4/10", status: "STABLE", icon: "🥔" },
         { name: "Cabbage", category: "Legendary", value: "160", demand: "4.5/10", status: "STABLE", icon: "🥬" },
-
-        // ITEM
         { name: "Super Fertilizer", category: "Item", value: "50", demand: "8/10", status: "HIGH DEMAND", icon: "🧪" },
         { name: "Golden Watering Can", category: "Item", value: "120", demand: "7/10", status: "STABLE", icon: "🚿" },
         { name: "Mystic Seed Pouch", category: "Item", value: "200", demand: "8.5/10", status: "RISING", icon: "💰" }
     ];
 
-    // Load from localStorage on GitHub Pages; fallback to default database
     let gameUnits = JSON.parse(localStorage.getItem('garden_td_units')) || defaultUnits;
-
     let activeSide = '', currentCategory = 'Leaderboard', selectedUnit = null, currentQty = 1;
     let headerClicks = 0, clickTimer = null;
 
-    function triggerAdminModal() {
-        headerClicks++;
-        clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => { headerClicks = 0; }, 1000);
-        if (headerClicks >= 5) {
-            headerClicks = 0;
-            document.getElementById('pin-modal').style.display = 'flex';
-            document.getElementById('admin-pin-input').value = '';
-        }
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        // Admin header trigger
+        document.getElementById('main-header').addEventListener('click', () => {
+            headerClicks++;
+            clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => { headerClicks = 0; }, 1000);
+            if (headerClicks >= 5) {
+                headerClicks = 0;
+                document.getElementById('pin-modal').style.display = 'flex';
+                document.getElementById('admin-pin-input').value = '';
+            }
+        });
 
-    function verifyPin() {
-        let pin = document.getElementById('admin-pin-input').value;
-        if (pin === 'admin123') {
+        document.getElementById('unlock-pin-btn').addEventListener('click', () => {
+            let pin = document.getElementById('admin-pin-input').value;
+            if (pin === 'admin123') {
+                document.getElementById('pin-modal').style.display = 'none';
+                document.getElementById('admin-modal').style.display = 'flex';
+                renderAdminList();
+            } else {
+                alert('Incorrect PIN!');
+            }
+        });
+
+        document.getElementById('cancel-pin-btn').addEventListener('click', () => {
             document.getElementById('pin-modal').style.display = 'none';
-            document.getElementById('admin-modal').style.display = 'flex';
-            renderAdminList();
-        } else {
-            alert('Incorrect PIN!');
-        }
-    }
+        });
+
+        document.getElementById('close-admin-btn').addEventListener('click', () => {
+            document.getElementById('admin-modal').style.display = 'none';
+        });
+
+        // Add buttons
+        document.getElementById('your-add-btn').addEventListener('click', () => openItemSelector('your'));
+        document.getElementById('their-add-btn').addEventListener('click', () => openItemSelector('their'));
+
+        // Modals
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('item-modal').style.display = 'none';
+        });
+
+        document.getElementById('close-inspect-btn').addEventListener('click', () => {
+            document.getElementById('inspect-modal').style.display = 'none';
+        });
+
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentCategory = e.target.getAttribute('data-cat');
+                applyFilters();
+            });
+        });
+
+        // Qty buttons
+        document.getElementById('qty-minus-btn').addEventListener('click', () => {
+            currentQty = Math.max(1, currentQty - 1);
+            document.getElementById('inspect-qty').innerText = currentQty;
+        });
+
+        document.getElementById('qty-plus-btn').addEventListener('click', () => {
+            currentQty += 1;
+            document.getElementById('inspect-qty').innerText = currentQty;
+        });
+
+        document.getElementById('confirm-add-btn').addEventListener('click', confirmAddToTrade);
+        document.getElementById('save-unit-btn').addEventListener('click', saveAdminUnit);
+        document.getElementById('export-btn').addEventListener('click', exportDatabase);
+        document.getElementById('import-file').addEventListener('change', importDatabase);
+    });
 
     function openItemSelector(side) {
         activeSide = side;
         document.getElementById('search-input').value = '';
         currentCategory = 'Leaderboard';
-        document.querySelectorAll('.tab-btn').forEach((t, i) => t.classList.toggle('active', i === 0));
+        document.querySelectorAll('.tab-btn').forEach((t, i) => {
+            t.classList.toggle('active', i === 0);
+        });
         applyFilters();
         document.getElementById('item-modal').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('item-modal').style.display = 'none'; }
-    function closeInspect() { document.getElementById('inspect-modal').style.display = 'none'; }
-
-    function filterCategory(cat, btn) {
-        currentCategory = cat;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        applyFilters();
     }
 
     function applyFilters() {
@@ -492,7 +526,7 @@
             item.className = 'grid-item';
             let iconHtml = (u.icon && (u.icon.startsWith('data:') || u.icon.startsWith('http'))) ? `<img src="${u.icon}">` : `<span style="font-size:22px;">${u.icon || '🌱'}</span>`;
             item.innerHTML = `${iconHtml}<div class="name">${u.name}</div><div class="val">${u.value}</div>`;
-            item.onclick = () => openInspect(u);
+            item.addEventListener('click', () => openInspect(u));
             grid.appendChild(item);
         });
     }
@@ -506,11 +540,6 @@
         document.getElementById('inspect-status').innerText = unit.status || 'STABLE';
         document.getElementById('inspect-qty').innerText = currentQty;
         document.getElementById('inspect-modal').style.display = 'flex';
-    }
-
-    function changeQty(amt) {
-        currentQty = Math.max(1, currentQty + amt);
-        document.getElementById('inspect-qty').innerText = currentQty;
     }
 
     function confirmAddToTrade() {
@@ -529,10 +558,14 @@
 
         card.innerHTML = `${iconHtml}<div class="info"><div class="name">${selectedUnit.name}</div><div class="val">${selectedUnit.value}${qtyText}</div></div>`;
         
-        card.onclick = () => { card.remove(); updateTotals(); adjustCardSizes(activeSide); };
+        card.addEventListener('click', () => { 
+            card.remove(); 
+            updateTotals(); 
+            adjustCardSizes(activeSide); 
+        });
         zone.appendChild(card);
-        closeInspect();
-        closeModal();
+        document.getElementById('inspect-modal').style.display = 'none';
+        document.getElementById('item-modal').style.display = 'none';
         updateTotals();
         adjustCardSizes(activeSide);
     }
@@ -621,4 +654,91 @@
         list.innerHTML = `<div style="font-weight:bold; margin-bottom:8px;">Manage Units (${gameUnits.length} Total):</div>`;
         gameUnits.forEach((u, idx) => {
             let row = document.createElement('div');
-            row.
+            row.className = 'unit-row-admin';
+            let thumb = (u.icon && (u.icon.startsWith('data:') || u.icon.startsWith('http'))) ? `<img src="${u.icon}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;">` : (u.icon || '🌱');
+            row.innerHTML = `<span>${thumb} <b>${u.name}</b> (${u.value})</span> <button class="del-btn" data-index="${idx}">Delete</button>`;
+            
+            row.querySelector('.del-btn').addEventListener('click', () => {
+                deleteAdminUnit(idx);
+            });
+            list.appendChild(row);
+        });
+    }
+
+    function saveAdminUnit() {
+        let name = document.getElementById('adm-name').value.trim();
+        let category = document.getElementById('adm-cat').value;
+        let value = document.getElementById('adm-val').value.trim();
+        let demand = document.getElementById('adm-demand').value.trim() || '5/10';
+        let status = document.getElementById('adm-status').value.trim() || 'STABLE';
+        let textIcon = document.getElementById('adm-icon').value.trim();
+        let fileInput = document.getElementById('adm-file');
+
+        if (!name || !value) { alert('Enter Name and Value'); return; }
+
+        if (fileInput.files && fileInput.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                finishSaving(name, category, value, demand, status, e.target.result);
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            let finalIcon = textIcon || '🌱';
+            finishSaving(name, category, value, demand, status, finalIcon);
+        }
+    }
+
+    function finishSaving(name, category, value, demand, status, icon) {
+        let existing = gameUnits.findIndex(u => u.name.toLowerCase() === name.toLowerCase());
+        let newEntry = { name, category, value, demand, status, icon };
+        if (existing > -1) { gameUnits[existing] = newEntry; } else { gameUnits.push(newEntry); }
+
+        localStorage.setItem('garden_td_units', JSON.stringify(gameUnits));
+        renderAdminList();
+        alert('Saved successfully!');
+        document.getElementById('adm-name').value = '';
+        document.getElementById('adm-val').value = '';
+        document.getElementById('adm-file').value = '';
+        document.getElementById('adm-icon').value = '';
+    }
+
+    function deleteAdminUnit(idx) {
+        gameUnits.splice(idx, 1);
+        localStorage.setItem('garden_td_units', JSON.stringify(gameUnits));
+        renderAdminList();
+    }
+
+    function exportDatabase() {
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gameUnits));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "garden_td_units_backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importDatabase(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    gameUnits = importedData;
+                    localStorage.setItem('garden_td_units', JSON.stringify(gameUnits));
+                    renderAdminList();
+                    alert(`Successfully imported ${gameUnits.length} units!`);
+                } else {
+                    alert('Invalid backup file format!');
+                }
+            } catch (err) {
+                alert('Error reading backup file!');
+            }
+        };
+        reader.readAsText(file);
+    }
+</script>
+</body>
+</html>
