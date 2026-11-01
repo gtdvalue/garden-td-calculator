@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Garden TD Value Calculator</title>
+<style>
+    body {
+        background-color: #1a222d;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        color: #ffffff;
+        margin: 0;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        user-select: none;
+    }
+    .wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 950px;
+    }
+    .header {
+        border: 2px solid #fbc531;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fbc531;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+        text-align: center;
+        background: rgba(0,0,0,0.3);
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+    .status-banner {
+        border: 2px solid #718093;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15px;
+        background: rgba(0,0,0,0.3);
+        box-sizing: border-box;
+    }
+    .calculator-grid {
+        display: flex;
+        gap: 20px;
+    }
+    .side {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+    }
+    .side-header {
+        border: 2px solid #718093;
+        border-radius: 10px;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        font-size: 16px;
+        background: rgba(0,0,0,0.2);
+    }
+    .your-side .side-header { color: #ff5252; border-color: #ff5252; }
+    .their-side .side-header { color: #48dbfb; border-color: #48dbfb; }
+    .add-btn {
+        background: none;
+        border: 2px solid currentColor;
+        color: inherit;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+    .add-btn:hover { background: currentColor; color: #1a222d; }
+    .drop-zone {
+        border: 2px solid #718093;
+        border-radius: 10px;
+        height: 240px;
+        background-color: #262f3a;
+        background-image: radial-gradient(#1e252e 20%, transparent 20%), radial-gradient(#1e252e 20%, transparent 20%);
+        background-size: 16px 16px;
+        background-position: 0 0, 8px 8px;
+        padding: 10px;
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-content: flex-start;
+    }
+    .total-box {
+        border: 2px solid #718093;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 15px;
+        background: rgba(0,0,0,0.2);
+    }
+    .your-side .total-box { border-color: #ff5252; color: #ff5252; }
+    .their-side .total-box { border-color: #48dbfb; color: #48dbfb; }
+
+    .item-card {
+        background: #252e3d;
+        border: 2px solid #718093;
+        border-radius: 8px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .item-card:hover { border-color: #e74c3c; transform: scale(1.02); }
+    .item-card img, .item-card .card-emoji {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .item-card .info { display: flex; flex-direction: column; line-height: 1.2; }
+    .item-card .name { font-size: 11px; font-weight: bold; color: #fff; }
+    .item-card .val { font-size: 12px; color: #fbc531; font-weight: bold; }
+
+    /* MODALS */
+    .modal, .inspect-modal, .admin-modal, .pin-modal {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(10, 14, 20, 0.95);
+        border-radius: 12px;
+        justify-content: center;
+        align-items: center;
+        z-index: 50;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .modal-container {
+        width: 100%;
+        height: 100%;
+        background-color: #232c37;
+        background-image: radial-gradient(#1a2029 25%, transparent 25%), radial-gradient(#1a2029 25%, transparent 25%);
+        background-size: 16px 16px;
+        border: 3px solid #2ecc71;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+    .modal-search-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        background: #232d39;
+        border: 2px solid #3c4b5e;
+        border-radius: 6px;
+    }
+    .modal-search {
+        flex: 1;
+        padding: 8px 12px;
+        background: transparent;
+        border: none;
+        color: #fff;
+        outline: none;
+        font-weight: 600;
+    }
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: #8a9ba8;
+        font-size: 18px;
+        padding: 0 12px;
+        cursor: pointer;
+    }
+    .modal-body { display: flex; flex: 1; gap: 12px; overflow: hidden; }
+    .sidebar-tabs { width: 130px; display: flex; flex-direction: column; gap: 6px; }
+    .tab-btn {
+        background: rgba(30, 38, 48, 0.8);
+        border: 2px solid #3b4859;
+        color: #7b8b9a;
+        padding: 10px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .tab-btn.active { border-color: #a55eea; color: #fff; }
+    .unit-grid-wrapper {
+        flex: 1;
+        border: 2px solid #a55eea;
+        border-radius: 8px;
+        background: rgba(15, 20, 27, 0.6);
+        padding: 8px;
+        overflow-y: auto;
+    }
+    .unit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+        gap: 8px;
+    }
+    .grid-item {
+        background: #252e3b;
+        border: 2px solid #8e44ad;
+        border-radius: 6px;
+        height: 75px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 4px;
+        box-sizing: border-box;
+    }
+    .grid-item:hover { border-color: #fbc531; transform: scale(1.03); }
+    .grid-item img { width: 28px; height: 28px; object-fit: contain; }
+    .grid-item .name { font-size: 9px; color: #dcdde1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .grid-item .val { font-size: 10px; color: #fbc531; font-weight: bold; }
+
+    /* ROBLOX INSPECT MODAL */
+    .inspect-card {
+        width: 100%;
+        max-width: 450px;
+        background-color: #2c3847;
+        background-image: radial-gradient(#202935 25%, transparent 25%), radial-gradient(#202935 25%, transparent 25%);
+        background-size: 16px 16px;
+        border: 3px solid #2ecc71;
+        border-radius: 10px;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+    .inspect-title { color: #ff9f43; font-size: 18px; font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between; }
+    .inspect-stats { display: flex; gap: 8px; margin-bottom: 12px; }
+    .stat-box { flex: 1; background: #1f2732; border: 1px solid #3c4b5e; border-radius: 6px; padding: 8px; text-align: center; }
+    .stat-box .lbl { font-size: 10px; color: #2ecc71; font-weight: bold; }
+    .stat-box .val { font-size: 13px; color: #fff; font-weight: bold; margin-top: 4px; }
+    .qty-row { background: #1f2732; border: 1px solid #3c4b5e; border-radius: 6px; padding: 8px; display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 12px; }
+    .qty-btn { background: #3c4b5e; border: none; color: #fff; width: 28px; height: 28px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .add-trade-btn { width: 100%; background: #233142; border: 2px solid #455a64; color: #fff; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; }
+    .add-trade-btn:hover { border-color: #2ecc71; color: #2ecc71; }
+
+    /* ADMIN PANEL MODAL */
+    .admin-card {
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        background: #1b222d;
+        border: 2px solid #e74c3c;
+        border-radius: 12px;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+    .admin-card h3 { color: #e74c3c; margin-top: 0; text-align: center; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 11px; color: #8a9ba8; font-weight: bold; margin-bottom: 3px; }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px;
+        background: #252e3d;
+        border: 1px solid #3c4b5e;
+        border-radius: 6px;
+        color: #fff;
+        box-sizing: border-box;
+    }
+    .admin-btn { width: 100%; padding: 10px; background: #e74c3c; border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 5px; }
+    .admin-btn:hover { background: #c0392b; }
+    .unit-row-admin { display: flex; justify-content: space-between; align-items: center; background: #252e3d; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
+    .del-btn { background: #e74c3c; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .backup-row { display: flex; gap: 10px; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header" onclick="triggerAdminModal()">GARDEN TD VALUE CALCULATOR</div>
+    <div class="status-banner" id="wfl-status">TRADE STATUS: FAIR</div>
+    
+    <div class="calculator-grid">
+        <div class="side your-side">
+            <div class="side-header">
+                <span>YOUR VALUE</span>
+                <button class="add-btn" onclick="openItemSelector('your')">+</button>
+            </div>
+            <div class="drop-zone" id="your-zone"></div>
+            <div class="total-box" id="your-total">TOTAL VALUE: 0</div>
+        </div>
+
+        <div class="side their-side">
+            <div class="side-header">
+                <span>THEIR VALUE</span>
+                <button class="add-btn" onclick="openItemSelector('their')">+</button>
+            </div>
+            <div class="drop-zone" id="their-zone"></div>
+            <div class="total-box" id="their-total">TOTAL VALUE: 0</div>
+        </div>
+    </div>
+
+    <!-- INVENTORY MODAL -->
+    <div class="modal" id="item-modal">
+        <div class="modal-container">
+            <div class="modal-search-row">
+                <input type="text" class="modal-search" id="search-input" placeholder="SEARCH UNITS..." oninput="applyFilters()">
+                <button class="close-btn" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" onclick="filterCategory('Leaderboard', this)">LEADERBOARD</button>
+                    <button class="tab-btn" onclick="filterCategory('Exclusive', this)">EXCLUSIVE</button>
+                    <button class="tab-btn" onclick="filterCategory('Godly', this)">GODLY</button>
+                    <button class="tab-btn" onclick="filterCategory('Legendary', this)">LEGENDARY</button>
+                    <button class="tab-btn" onclick="filterCategory('Item', this)">ITEM</button>
+                </div>
+                <div class="unit-grid-wrapper">
+                    <div class="unit-grid" id="unit-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSPECT MODAL -->
+    <div class="inspect-modal" id="inspect-modal">
+        <div class="inspect-card">
+            <div class="inspect-title">
+                <span id="inspect-name">UNIT</span>
+                <span style="cursor:pointer; color:#8a9ba8;" onclick="closeInspect()">✕</span>
+            </div>
+            <div class="inspect-stats">
+                <div class="stat-box"><div class="lbl">VALUE</div><div class="val" id="inspect-val">0</div></div>
+                <div class="stat-box"><div class="lbl">DEMAND</div><div class="val" id="inspect-demand">5/10</div></div>
+                <div class="stat-box"><div class="lbl">STATUS</div><div class="val" id="inspect-status">STABLE</div></div>
+            </div>
+            <div class="qty-row">
+                <button class="qty-btn" onclick="changeQty(-1)">-</button>
+                <span id="inspect-qty" style="font-weight:bold; font-size:16px;">1</span>
+                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+            <button class="add-trade-btn" onclick="confirmAddToTrade()">ADD TO TRADE</button>
+        </div>
+    </div>
+
+    <!-- PIN CODE MODAL -->
+    <div class="pin-modal" id="pin-modal">
+        <div class="inspect-card" style="max-width:320px; text-align:center;">
+            <div style="font-weight:bold; color:#e74c3c; margin-bottom:10px;">ENTER ADMIN PIN</div>
+            <input type="password" id="admin-pin-input" placeholder="PIN CODE" style="width:100%; padding:8px; background:#1f2732; border:1px solid #3c4b5e; color:#fff; border-radius:4px; text-align:center; margin-bottom:10px;">
+            <button class="admin-btn" onclick="verifyPin()">UNLOCK</button>
+            <button style="background:none; border:none; color:#8a9ba8; margin-top:10px; cursor:pointer;" onclick="document.getElementById('pin-modal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div class="admin-modal" id="admin-modal">
+        <div class="admin-card">
+            <h3>GARDEN TD ADMIN PANEL</h3>
+            <div style="text-align:right; margin-bottom:10px;"><button class="del-btn" onclick="document.getElementById('admin-modal').style.display='none'">Close X</button></div>
+            
+            <div class="backup-row">
+                <button class="admin-btn" style="background:#27ae60; margin:0;" onclick="exportDatabase()">📥 Export Database File</button>
+                <label class="admin-btn" style="background:#2980b9; margin:0; text-align:center; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    📤 Import Database <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importDatabase(event)">
+                </label>
+            </div>
+
+            <div class="form-group"><label>UNIT NAME</label><input type="text" id="adm-name" placeholder="e.g. Infectia"></div>
+            <div class="form-group">
+                <label>CATEGORY</label>
+                <select id="adm-cat">
+                    <option>Leaderboard</option><option>Exclusive</option><option>Godly</option><option>Legendary</option><option>Item</option>
+                </select>
+            </div>
+            <div class="form-group"><label>VALUE (Any Text e.g. 1.85K+ or Overpaid)</label><input type="text" id="adm-val" placeholder="1.85K+"></div>
+            <div class="form-group"><label>DEMAND</label><input type="text" id="adm-demand" placeholder="7.5/10"></div>
+            <div class="form-group"><label>STATUS</label><input type="text" id="adm-status" placeholder="SLOWLY RISING"></div>
+            <div class="form-group">
+                <label>UPLOAD IMAGE FILE (OR TYPE IMAGE URL / EMOJI)</label>
+                <input type="file" id="adm-file" accept="image/*" style="background:none; border:none; padding:4px 0;">
+                <input type="text" id="adm-icon" placeholder="Or paste direct image URL / emoji here" style="margin-top:4px;">
+            </div>
+            <button class="admin-btn" onclick="saveAdminUnit()">SAVE / ADD UNIT</button>
+            
+            <div style="margin-top:15px; border-top:1px solid #3c4b5e; padding-top:10px;" id="admin-unit-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let defaultUnits = [
+        // LEADERBOARD
+        { name: "Electric Beetroot", category: "Leaderboard", value: "1.85K+", demand: "7.5/10", status: "SLOWLY RISING", icon: "⚡" },
+        { name: "Infectia", category: "Leaderboard", value: "2.80K", demand: "8/10", status: "STABLE", icon: "🌱" },
+        { name: "Eastern Dragon", category: "Leaderboard", value: "3.20K+", demand: "9/10", status: "RISING", icon: "🐉" },
+        { name: "Celestial Rose", category: "Leaderboard", value: "4.10K", demand: "8.5/10", status: "STABLE", icon: "🌹" },
+
+        // EXCLUSIVE
+        { name: "Venus Floortrap", category: "Exclusive", value: "950", demand: "7/10", status: "STABLE", icon: "🪴" },
+        { name: "Boombulb", category: "Exclusive", value: "1.20K", demand: "8/10", status: "RISING", icon: "💣" },
+        { name: "Sonic Bloom", category: "Exclusive", value: "850", demand: "6.5/10", status: "STABLE", icon: "🌸" },
+        { name: "Garden Fairy", category: "Exclusive", value: "1.10K", demand: "7.5/10", status: "SLOWLY RISING", icon: "🧚" },
+        { name: "Peas in a Pod", category: "Exclusive", value: "750", demand: "6/10", status: "STABLE", icon: "🫛" },
+        { name: "Scarecrow", category: "Exclusive", value: "900", demand: "7/10", status: "STABLE", icon: "🌾" },
+
+        // GODLY
+        { name: "Pomegranate", category: "Godly", value: "500", demand: "6/10", status: "STABLE", icon: "🍎" },
+        { name: "Radish", category: "Godly", value: "450", demand: "5.5/10", status: "STABLE", icon: "🥕" },
+        { name: "Vines", category: "Godly", value: "550", demand: "6.5/10", status: "SLOWLY RISING", icon: "🌿" },
+        { name: "Walnut", category: "Godly", value: "400", demand: "5/10", status: "STABLE", icon: "🌰" },
+        { name: "Stemstrike", category: "Godly", value: "600", demand: "7/10", status: "STABLE", icon: "🗡️" },
+        { name: "Slapleaf", category: "Godly", value: "480", demand: "6/10", status: "STABLE", icon: "🍃" },
+
+        // LEGENDARY
+        { name: "Onion", category: "Legendary", value: "150", demand: "4/10", status: "STABLE", icon: "🧅" },
+        { name: "Tomato", category: "Legendary", value: "180", demand: "4.5/10", status: "STABLE", icon: "🍅" },
+        { name: "Potato", category: "Legendary", value: "130", demand: "4/10", status: "STABLE", icon: "🥔" },
+        { name: "Cabbage", category: "Legendary", value: "160", demand: "4.5/10", status: "STABLE", icon: "🥬" },
+
+        // ITEM
+        { name: "Super Fertilizer", category: "Item", value: "50", demand: "8/10", status: "HIGH DEMAND", icon: "🧪" },
+        { name: "Golden Watering Can", category: "Item", value: "120", demand: "7/10", status: "STABLE", icon: "🚿" },
+        { name: "Mystic Seed Pouch", category: "Item", value: "200", demand: "8.5/10", status: "RISING", icon: "💰" }
+    ];
+
+    // Load from localStorage on GitHub Pages; fallback to default database
+    let gameUnits = JSON.parse(localStorage.getItem('garden_td_units')) || defaultUnits;
+
+    let activeSide = '', currentCategory = 'Leaderboard', selectedUnit = null, currentQty = 1;
+    let headerClicks = 0, clickTimer = null;
+
+    function triggerAdminModal() {
+        headerClicks++;
+        clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => { headerClicks = 0; }, 1000);
+        if (headerClicks >= 5) {
+            headerClicks = 0;
+            document.getElementById('pin-modal').style.display = 'flex';
+            document.getElementById('admin-pin-input').value = '';
+        }
+    }
+
+    function verifyPin() {
+        let pin = document.getElementById('admin-pin-input').value;
+        if (pin === 'admin123') {
+            document.getElementById('pin-modal').style.display = 'none';
+            document.getElementById('admin-modal').style.display = 'flex';
+            renderAdminList();
+        } else {
+            alert('Incorrect PIN!');
+        }
+    }
+
+    function openItemSelector(side) {
+        activeSide = side;
+        document.getElementById('search-input').value = '';
+        currentCategory = 'Leaderboard';
+        document.querySelectorAll('.tab-btn').forEach((t, i) => t.classList.toggle('active', i === 0));
+        applyFilters();
+        document.getElementById('item-modal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('item-modal').style.display = 'none'; }
+    function closeInspect() { document.getElementById('inspect-modal').style.display = 'none'; }
+
+    function filterCategory(cat, btn) {
+        currentCategory = cat;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters();
+    }
+
+    function applyFilters() {
+        let q = document.getElementById('search-input').value.toLowerCase();
+        let filtered = gameUnits.filter(u => u.category === currentCategory && u.name.toLowerCase().includes(q));
+        let grid = document.getElementById('unit-grid');
+        grid.innerHTML = '';
+        filtered.forEach(u => {
+            let item = document.createElement('div');
+            item.className = 'grid-item';
+            let iconHtml = (u.icon && (u.icon.startsWith('data:') || u.icon.startsWith('http'))) ? `<img src="${u.icon}">` : `<span style="font-size:22px;">${u.icon || '🌱'}</span>`;
+            item.innerHTML = `${iconHtml}<div class="name">${u.name}</div><div class="val">${u.value}</div>`;
+            item.onclick = () => openInspect(u);
+            grid.appendChild(item);
+        });
+    }
+
+    function openInspect(unit) {
+        selectedUnit = unit;
+        currentQty = 1;
+        document.getElementById('inspect-name').innerText = unit.name.toUpperCase();
+        document.getElementById('inspect-val').innerText = unit.value;
+        document.getElementById('inspect-demand').innerText = unit.demand || '5/10';
+        document.getElementById('inspect-status').innerText = unit.status || 'STABLE';
+        document.getElementById('inspect-qty').innerText = currentQty;
+        document.getElementById('inspect-modal').style.display = 'flex';
+    }
+
+    function changeQty(amt) {
+        currentQty = Math.max(1, currentQty + amt);
+        document.getElementById('inspect-qty').innerText = currentQty;
+    }
+
+    function confirmAddToTrade() {
+        if (!selectedUnit) return;
+        let zone = document.getElementById(activeSide + '-zone');
+        let card = document.createElement('div');
+        card.className = 'item-card';
+        
+        let iconHtml = (selectedUnit.icon && (selectedUnit.icon.startsWith('data:') || selectedUnit.icon.startsWith('http'))) 
+            ? `<img src="${selectedUnit.icon}">` 
+            : `<div class="card-emoji">${selectedUnit.icon || '🌱'}</div>`;
+
+        let qtyText = currentQty > 1 ? ` x${currentQty}` : '';
+        card.setAttribute('data-unit-value', selectedUnit.value);
+        card.setAttribute('data-unit-qty', currentQty);
+
+        card.innerHTML = `${iconHtml}<div class="info"><div class="name">${selectedUnit.name}</div><div class="val">${selectedUnit.value}${qtyText}</div></div>`;
+        
+        card.onclick = () => { card.remove(); updateTotals(); adjustCardSizes(activeSide); };
+        zone.appendChild(card);
+        closeInspect();
+        closeModal();
+        updateTotals();
+        adjustCardSizes(activeSide);
+    }
+
+    function parseVal(valStr) {
+        if (!valStr) return 0;
+        let clean = valStr.toString().toUpperCase().replace(/[^0-9.KMB]/g, '');
+        let mult = 1;
+        if (clean.includes('K')) { mult = 1000; clean = clean.replace('K', ''); }
+        else if (clean.includes('M')) { mult = 1000000; clean = clean.replace('M', ''); }
+        else if (clean.includes('B')) { mult = 1000000000; clean = clean.replace('B', ''); }
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : num * mult;
+    }
+
+    function formatVal(num) {
+        if (num >= 1000000000) return (num / 1000000000).toFixed(2).replace(/\.0$/, '') + 'B';
+        if (num >= 1000000) return (num / 1000000).toFixed(2).replace(/\.0$/, '') + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(2).replace(/\.0$/, '') + 'K';
+        return num.toLocaleString();
+    }
+
+    function updateTotals() {
+        ['your', 'their'].forEach(side => {
+            let zone = document.getElementById(side + '-zone');
+            let cards = zone.getElementsByClassName('item-card');
+            let totalValNum = 0;
+
+            for (let card of cards) {
+                let valStr = card.getAttribute('data-unit-value');
+                let qty = parseInt(card.getAttribute('data-unit-qty')) || 1;
+                totalValNum += parseVal(valStr) * qty;
+            }
+
+            let formattedTotal = totalValNum > 0 ? formatVal(totalValNum) : '0';
+            document.getElementById(side + '-total').innerText = `TOTAL VALUE: ${formattedTotal}`;
+        });
+        updateTradeStatus();
+    }
+
+    function updateTradeStatus() {
+        let yourZone = document.getElementById('your-zone');
+        let theirZone = document.getElementById('their-zone');
+        let yourSum = 0, theirSum = 0;
+
+        for (let c of yourZone.getElementsByClassName('item-card')) {
+            yourSum += parseVal(c.getAttribute('data-unit-value')) * (parseInt(c.getAttribute('data-unit-qty')) || 1);
+        }
+        for (let c of theirZone.getElementsByClassName('item-card')) {
+            theirSum += parseVal(c.getAttribute('data-unit-value')) * (parseInt(c.getAttribute('data-unit-qty')) || 1);
+        }
+
+        let banner = document.getElementById('wfl-status');
+        if (yourSum === 0 && theirSum === 0) {
+            banner.innerText = "TRADE STATUS: FAIR";
+            banner.style.color = "#fff";
+        } else if (theirSum > yourSum * 1.15) {
+            banner.innerText = "TRADE STATUS: BIG WIN (THEY ARE OVERPAYING)";
+            banner.style.color = "#2ecc71";
+        } else if (yourSum > theirSum * 1.15) {
+            banner.innerText = "TRADE STATUS: LOSE (YOU ARE OVERPAYING)";
+            banner.style.color = "#e74c3c";
+        } else {
+            banner.innerText = "TRADE STATUS: FAIR TRADE";
+            banner.style.color = "#fbc531";
+        }
+    }
+
+    function adjustCardSizes(side) {
+        let zone = document.getElementById(side + '-zone');
+        let cards = zone.getElementsByClassName('item-card');
+        let count = cards.length;
+        
+        let scale = 1;
+        if (count > 6 && count <= 12) scale = 0.9;
+        else if (count > 12 && count <= 20) scale = 0.8;
+        else if (count > 20) scale = 0.7;
+
+        for (let c of cards) {
+            c.style.transform = `scale(${scale})`;
+        }
+    }
+
+    function renderAdminList() {
+        let list = document.getElementById('admin-unit-list');
+        list.innerHTML = `<div style="font-weight:bold; margin-bottom:8px;">Manage Units (${gameUnits.length} Total):</div>`;
+        gameUnits.forEach((u, idx) => {
+            let row = document.createElement('div');
+            row.
