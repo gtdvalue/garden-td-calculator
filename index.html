@@ -401,31 +401,7 @@
 </div>
 
 <script>
-    let defaultUnits = [
-        { name: "Electric Beetroot", category: "Leaderboard", value: "1.85K+", demand: "7.5/10", status: "SLOWLY RISING", icon: "⚡" },
-        { name: "Infectia", category: "Leaderboard", value: "2.80K", demand: "8/10", status: "STABLE", icon: "🌱" },
-        { name: "Eastern Dragon", category: "Leaderboard", value: "3.20K+", demand: "9/10", status: "RISING", icon: "🐉" },
-        { name: "Celestial Rose", category: "Leaderboard", value: "4.10K", demand: "8.5/10", status: "STABLE", icon: "🌹" },
-        { name: "Venus Floortrap", category: "Exclusive", value: "950", demand: "7/10", status: "STABLE", icon: "🪴" },
-        { name: "Boombulb", category: "Exclusive", value: "1.20K", demand: "8/10", status: "RISING", icon: "💣" },
-        { name: "Sonic Bloom", category: "Exclusive", value: "850", demand: "6.5/10", status: "STABLE", icon: "🌸" },
-        { name: "Garden Fairy", category: "Exclusive", value: "1.10K", demand: "7.5/10", status: "SLOWLY RISING", icon: "🧚" },
-        { name: "Peas in a Pod", category: "Exclusive", value: "750", demand: "6/10", status: "STABLE", icon: "🫛" },
-        { name: "Scarecrow", category: "Exclusive", value: "900", demand: "7/10", status: "STABLE", icon: "🌾" },
-        { name: "Pomegranate", category: "Godly", value: "500", demand: "6/10", status: "STABLE", icon: "🍎" },
-        { name: "Radish", category: "Godly", value: "450", demand: "5.5/10", status: "STABLE", icon: "🥕" },
-        { name: "Vines", category: "Godly", value: "550", demand: "6.5/10", status: "SLOWLY RISING", icon: "🌿" },
-        { name: "Walnut", category: "Godly", value: "400", demand: "5/10", status: "STABLE", icon: "🌰" },
-        { name: "Stemstrike", category: "Godly", value: "600", demand: "7/10", status: "STABLE", icon: "🗡️" },
-        { name: "Slapleaf", category: "Godly", value: "480", demand: "6/10", status: "STABLE", icon: "🍃" },
-        { name: "Onion", category: "Legendary", value: "150", demand: "4/10", status: "STABLE", icon: "🧅" },
-        { name: "Tomato", category: "Legendary", value: "180", demand: "4.5/10", status: "STABLE", icon: "🍅" },
-        { name: "Potato", category: "Legendary", value: "130", demand: "4/10", status: "STABLE", icon: "🥔" },
-        { name: "Cabbage", category: "Legendary", value: "160", demand: "4.5/10", status: "STABLE", icon: "🥬" },
-        { name: "Super Fertilizer", category: "Item", value: "50", demand: "8/10", status: "HIGH DEMAND", icon: "🧪" },
-        { name: "Golden Watering Can", category: "Item", value: "120", demand: "7/10", status: "STABLE", icon: "🚿" },
-        { name: "Mystic Seed Pouch", category: "Item", value: "200", demand: "8.5/10", status: "RISING", icon: "💰" }
-    ];
+    let defaultUnits = [];
 
     let gameUnits = JSON.parse(localStorage.getItem('garden_td_units')) || defaultUnits;
     let activeSide = '', currentCategory = 'Leaderboard', selectedUnit = null, currentQty = 1;
